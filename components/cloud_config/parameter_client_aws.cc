@@ -20,6 +20,8 @@
 #include <string_view>
 #include <thread>
 
+#include "absl/flags/flag.h"
+#include "absl/strings/string_view.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
@@ -31,6 +33,8 @@
 #include "components/cloud_config/parameter_client.h"
 #include "components/errors/error_util_aws.h"
 #include "glog/logging.h"
+
+ABSL_FLAG(std::string, aws_endpoint_url, "", "AWS_ENDPOINT_URL");
 
 namespace kv_server {
 namespace {
@@ -100,7 +104,9 @@ class AwsParameterClient : public ParameterClient {
       ssm_client_.reset(
           (Aws::SSM::SSMClient*)client_options.client_for_unit_testing_);
     } else {
-      ssm_client_ = std::make_unique<Aws::SSM::SSMClient>();
+      Aws::Client::ClientConfiguration clientConfig;
+      clientConfig.endpointOverride = absl::GetFlag(FLAGS_aws_endpoint_url);
+      ssm_client_ = std::make_unique<Aws::SSM::SSMClient>(clientConfig);
     }
   }
 
