@@ -36,6 +36,9 @@
 #include "components/errors/error_util_aws.h"
 #include "glog/logging.h"
 
+#include "absl/flags/flag.h"
+#include "absl/strings/string_view.h"
+ABSL_FLAG(std::string, aws_endpoint_url, "", "AWS_ENDPOINT_URL");
 namespace kv_server {
 namespace {
 
@@ -220,7 +223,9 @@ class S3BlobStorageClientFactory : public BlobStorageClientFactory {
       MetricsRecorder& metrics_recorder,
       BlobStorageClient::ClientOptions client_options) override {
     Aws::Client::ClientConfiguration config;
+    config.endpointOverride = absl::GetFlag(FLAGS_aws_endpoint_url);
     config.maxConnections = client_options.max_connections;
+
     std::shared_ptr<Aws::S3::S3Client> client =
         std::make_shared<Aws::S3::S3Client>(config);
 
