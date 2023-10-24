@@ -105,7 +105,7 @@ class AwsParameterClient : public ParameterClient {
           (Aws::SSM::SSMClient*)client_options.client_for_unit_testing_);
     } else {
       Aws::Client::ClientConfiguration clientConfig;
-      clientConfig.endpointOverride = Aws::Environment::GetEnv("AWS_ENDPOINT_URL").c_str();
+      clientConfig.endpointOverride = Aws::Environment::GetEnv("AWS_ENDPOINT_URL");
       ssm_client_ = std::make_unique<Aws::SSM::SSMClient>(clientConfig);
     }
   }

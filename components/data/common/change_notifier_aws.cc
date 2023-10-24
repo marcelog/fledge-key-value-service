@@ -22,6 +22,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/synchronization/notification.h"
+#include "aws/core/platform/Environment.h"
 #include "aws/core/Aws.h"
 #include "aws/sns/SNSClient.h"
 #include "aws/sns/model/SubscribeRequest.h"
@@ -84,6 +85,7 @@ class AwsChangeNotifier : public ChangeNotifier {
       // request timeout must be > poll timeout
       // https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/cpp/example_code/sqs/long_polling_on_message_receipt.cpp
       Aws::Client::ClientConfiguration client_cfg;
+      client_cfg.endpointOverride = Aws::Environment::GetEnv("AWS_ENDPOINT_URL");
       client_cfg.requestTimeoutMs =
           absl::ToInt64Milliseconds(kMaxLongPollDuration + absl::Seconds(10));
       sqs_ = std::make_unique<Aws::SQS::SQSClient>(client_cfg);

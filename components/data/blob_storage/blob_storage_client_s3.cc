@@ -224,12 +224,15 @@ class S3BlobStorageClientFactory : public BlobStorageClientFactory {
       MetricsRecorder& metrics_recorder,
       BlobStorageClient::ClientOptions client_options) override {
     Aws::Client::ClientConfiguration config;
-    config.endpointOverride = Aws::Environment::GetEnv("AWS_ENDPOINT_URL").c_str();
+    config.endpointOverride = Aws::Environment::GetEnv("AWS_ENDPOINT_URL");
     config.maxConnections = client_options.max_connections;
 
     std::shared_ptr<Aws::S3::S3Client> client =
-        std::make_shared<Aws::S3::S3Client>(config);
-
+        std::make_shared<Aws::S3::S3Client>(
+          config,
+          Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy::Never,
+          false
+        );
     return std::make_unique<S3BlobStorageClient>(
         metrics_recorder, client, client_options.max_range_bytes);
   }
