@@ -36,13 +36,13 @@ static_resources:
               domains: [ "*" ]
               routes:
               - match: { prefix: "/kv_server.v1.KeyValueService" }
-                route: { cluster: grpccluster, timeout: 60s }
+                route: { cluster: kv-server, timeout: 60s }
               - match: { prefix: "/kv_server.v2.KeyValueService" }
-                route: { cluster: grpccluster, timeout: 60s }
+                route: { cluster: kv-server, timeout: 60s }
               - match: { prefix: "/grpc.health.v1.Health" }
-                route: { cluster: grpccluster, timeout: 60s }
+                route: { cluster: kv-server, timeout: 60s }
               - match: { prefix: "/grpc.reflection.v1alpha.ServerReflection" }
-                route: { cluster: grpccluster, timeout: 60s }
+                route: { cluster: kv-server, timeout: 60s }
               retry_policy:
                 retry_on: 5xx
                 num_retries: 10
@@ -66,7 +66,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.health_check.v3.HealthCheck
               pass_through_mode: false
               cluster_min_healthy_percentages:
-                grpccluster: { value: 50 }
+                kv-server: { value: 50 }
               headers:
               - name: ":path"
                 exact_match: "/healthcheck"
@@ -91,7 +91,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
-  - name: grpccluster
+  - name: kv-server
     connect_timeout: 2s
     type: LOGICAL_DNS
     lb_policy: ROUND_ROBIN
@@ -102,7 +102,7 @@ static_resources:
         explicit_http_config:
           http2_protocol_options: { }
     load_assignment:
-      cluster_name: grpccluster
+      cluster_name: kv-server
       endpoints:
       - lb_endpoints:
         - endpoint:
