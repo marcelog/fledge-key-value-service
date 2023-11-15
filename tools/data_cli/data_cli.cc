@@ -28,6 +28,7 @@
 using kv_server::FormatDataCommand;
 using kv_server::GenerateSnapshotCommand;
 
+ABSL_FLAG(std::uint16_t, shard_num, 0, "Input file to convert records from.");
 ABSL_FLAG(std::string, input_file, "-", "Input file to convert records from.");
 ABSL_FLAG(std::string, input_format, "CSV",
           "Format of the input file. Possible options=(CSV|DELTA)");
@@ -65,6 +66,7 @@ Usage: data_cli <command> <flags>
 
 Commands:
 - format_data          Converts input to output format.
+    [--shard_num]      (Optional) metadata.shard_num
     [--input_file]     (Optional) Defaults to stdin. Input file to convert records from.
     [--input_format]   (Optional) Defaults to "CSV". Possible options=(CSV|DELTA)
     [--output_file]    (Optional) Defaults to stdout. Output file to write converted records to.
@@ -164,6 +166,7 @@ int main(int argc, char** argv) {
                 absl::GetFlag(FLAGS_csv_column_delimiter)[0],
             .csv_value_delimiter = absl::GetFlag(FLAGS_csv_value_delimiter)[0],
             .record_type = absl::GetFlag(FLAGS_record_type),
+            .shard_num = absl::GetFlag(FLAGS_shard_num),
         },
         *i_stream, *o_stream);
     if (!format_data_command.ok()) {

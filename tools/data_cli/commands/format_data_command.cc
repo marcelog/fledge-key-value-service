@@ -115,6 +115,9 @@ absl::StatusOr<std::unique_ptr<DeltaRecordWriter>> CreateRecordWriter(
   }
   if (lw_output_format == kDeltaFormat) {
     KVFileMetadata metadata;
+    if (params.shard_num > 0) {
+      metadata.mutable_sharding_metadata()->set_shard_num(params.shard_num);
+    }
     auto delta_record_writer = DeltaRecordStreamWriter<std::ostream>::Create(
         output_stream, DeltaRecordWriter::Options{.metadata = metadata});
     if (!delta_record_writer.ok()) {
