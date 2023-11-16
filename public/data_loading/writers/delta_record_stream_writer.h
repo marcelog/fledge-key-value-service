@@ -67,7 +67,9 @@ DeltaRecordStreamWriter<DestStreamT>::DeltaRecordStreamWriter(
           std::make_unique<
               riegeli::RecordWriter<riegeli::OStreamWriter<DestStreamT*>>>(
               riegeli::OStreamWriter(&dest_stream),
-              GetRecordWriterOptions(options_))) {}
+              GetRecordWriterOptions(options_))) {
+//std::cerr << "File metadata: " << options_.metadata.DebugString();
+}
 
 template <typename DestStreamT>
 absl::StatusOr<std::unique_ptr<DeltaRecordStreamWriter<DestStreamT>>>
