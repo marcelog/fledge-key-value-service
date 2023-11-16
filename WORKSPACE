@@ -13,11 +13,11 @@ python_deps("//builders/bazel")
 
 http_archive(
     name = "google_privacysandbox_servers_common",
-    # commit 35bc042eca8cbf27cc4229ce85cacb2c82db4969 2023-10-19
-    sha256 = "938b04d73759b399919ff2d5d6684edbe6f04fcbea0c066f916718681e6bb85d",
-    strip_prefix = "data-plane-shared-libraries-35bc042eca8cbf27cc4229ce85cacb2c82db4969",
+    # commit f0d0b89 2023-11-14
+    sha256 = "a225f5d508144cb761670f996c71b9daaeaf709f7b9d7fcbd96368148bc9d876",
+    strip_prefix = "data-plane-shared-libraries-f0d0b89d45329ffe85d113dd389a29566e5a0094",
     urls = [
-        "https://github.com/privacysandbox/data-plane-shared-libraries/archive/35bc042eca8cbf27cc4229ce85cacb2c82db4969.zip",
+        "https://github.com/privacysandbox/data-plane-shared-libraries/archive/f0d0b89d45329ffe85d113dd389a29566e5a0094.zip",
     ],
 )
 
@@ -125,7 +125,3 @@ install_deps()
 load("//third_party_deps:rules_closure_repositories.bzl", "rules_closure_repositories")
 
 rules_closure_repositories()
-
-load("//third_party_deps:rules_closure_deps.bzl", "rules_closure_deps")
-
-rules_closure_deps()

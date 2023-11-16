@@ -257,7 +257,11 @@ class AwsInstanceClient : public InstanceClient {
   }
 
   absl::StatusOr<std::vector<InstanceInfo>> DescribeInstanceGroupInstances(
-      const absl::flat_hash_set<std::string>& instance_groups) override {
+      DescribeInstanceGroupInput& describe_instance_group_input) override {
+    auto input = std::get_if<AwsDescribeInstanceGroupInput>(
+        &describe_instance_group_input);
+    CHECK(input) << "AwsDescribeInstanceGroupInput invalid";
+    const auto& instance_groups = input->instance_group_names;
     std::vector<InstanceInfo> instances;
     DescribeAutoScalingGroupsRequest request;
     request.SetAutoScalingGroupNames(
@@ -356,8 +360,11 @@ class AwsInstanceClient : public InstanceClient {
     Aws::EC2::Model::DescribeTagsRequest request;
     request.SetFilters({resource_id_filter, key_filter});
 
+    LOG(INFO) << "Sending Aws::EC2::Model::DescribeTagsRequest to get tag: "
+              << tag;
     const auto outcome = ec2_client_->DescribeTags(request);
     if (!outcome.IsSuccess()) {
+      LOG(ERROR) << "Failed to get tag: " << outcome.GetError();
       return AwsErrorToStatus(outcome.GetError());
     }
     if (outcome.GetResult().GetTags().size() != 1) {

@@ -17,6 +17,7 @@
 #ifndef PUBLIC_DATA_LOADING_RECORDS_UTILS_H_
 #define PUBLIC_DATA_LOADING_RECORDS_UTILS_H_
 
+#include <string>
 #include <string_view>
 #include <utility>
 #include <variant>
@@ -25,6 +26,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "public/data_loading/data_loading_generated.h"
+#include "public/data_loading/record_utils.h"
 
 namespace kv_server {
 
@@ -89,10 +91,6 @@ bool operator!=(const DataRecordStruct& lhs_record,
 // Returns true if the value has been default initialized and no variant was
 // set.
 bool IsEmptyValue(const KeyValueMutationRecordValueT& value);
-
-// Casts the flat buffer `record_buffer` into a string representation.
-std::string_view ToStringView(
-    const flatbuffers::FlatBufferBuilder& record_buffer);
 
 // Serializes the record struct to a flat buffer builder using format defined by
 // `data_loading.fbs:KeyValueMutationRecord` table.

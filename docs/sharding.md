@@ -24,7 +24,7 @@ preserved. It also allows to do it with minimal overhead:
 Lastly, sharding maintains the privacy requirements, where possible. See the linked doc above for
 additional details.
 
-Sharding can be turned on for AWS, and we are working on the implementation for GCP.
+Sharding can be turned on for AWS and GCP.
 
 # Should I use sharding?
 
@@ -56,7 +56,7 @@ approach the limit, e.g. within 10%, you should consider this feature.
 ## AdTech sharding related responsibilities
 
 To take advantage of sharding capabilities, an AdTech needs to update how they load data on the
-[standard](#standard-path) and [realime](#Relatime update path) updates. Please refer to each
+[standard](#standard-path) and [realime](#relatime-update-path) updates. Please refer to each
 section for more details.
 
 Additionally, please refer to this [doc](./sharding_debugging.md) to see the additional metrics and
@@ -73,8 +73,8 @@ created.
 
 ## Enabling sharding
 
-The number of shards is controlled by the
-[`num_shards`](https://source.corp.google.com/h/team/kiwi-air-force-eng-team/kv-server/+/main:docs/AWS_Terraform_vars.md)
+The number of shards is controlled by the `num_shards`
+([AWS](https://source.corp.google.com/h/team/kiwi-air-force-eng-team/kv-server/+/main:docs/AWS_Terraform_vars.md),[GCP](https://source.corp.google.com/h/team/kiwi-air-force-eng-team/kv-server/+/main:docs/GCP_Terraform_vars.md))
 parameter.
 
 If this parameter is not set or set to 1, then no additional cost associated with sharding is
@@ -113,15 +113,23 @@ server's shard number, the server can skip the file without reading the records.
 
 ### Relatime update path
 
-A message published to SNS _must_ be tagged with a shard number. SNS will fan out such messages
-[only](https://github.com/privacysandbox/fledge-key-value-service/blob/31e6d0e3f173086214c068b62d6b95935063fd6b/components/data/common/msg_svc_aws.cc#L174C79-L174C79)
+A message published to SNS, for AWS, or PubSub, for GCP _must_ be tagged with a shard number.
+SNS/PubSub will fan out such messages only
+([AWS](https://github.com/privacysandbox/fledge-key-value-service/blob/31e6d0e3f173086214c068b62d6b95935063fd6b/components/data/common/msg_svc_aws.cc#L174),
+[GCP](https://github.com/privacysandbox/fledge-key-value-service/blob/31e6d0e3f173086214c068b62d6b95935063fd6b/components/data/common/msg_svc_gcp.cc#L86))
 to the machines that are associated with that shard number. This increases the throughput for any
 given machine, as it has to process fewer messages and only relevant ones.
 
-CLI example:
+#### AWS CLI example:
 
 ```sh
 aws sns publish --topic-arn "$topic_arn" --message "$file" --message-attributes '{"shard_num" : { "DataType":"String", "StringValue":"1"}}'
+```
+
+#### GCP CLI example:
+
+```sh
+gcloud pubsub topics publish "$pubsub" --message "$file" --attribute=shard_num=2
 ```
 
 ## Read path
@@ -164,3 +172,34 @@ implemented:
     live on which shards.
 -   for any given kv server read request, when data shards are queried, the payloads of
     corresponding requests are of the same size, for the same reason.
+
+## Machine sizes
+
+### AWS
+
+AWS has many different types of machines. However, an enclave can only run in a single NUMA cluster.
+If a machine has many clusters, an enclave can only run in one of them. So it is advisable to choose
+a machine with a single NUMA cluster to better utilize resources.
+
+Unfortunately, the docs don't say how many NUMA clusters a machine has. And there is no API for it.
+You can deploy a machine and using this
+[link](https://repost.aws/knowledge-center/ec2-review-numa-statistics) see how many NUMA clusters it
+has.
+
+Even though there are machines available with up to 20 TB RAM, those machines have many NUMA
+clusters in them. `r7i.24xlarge` or `r7a.24xlarge` has the biggest NUMA cluster of 768 GiB among EC2
+machines that we are aware of.
+
+That is effectively the upper bound, and actual amount of data you can store is smaller, since you
+need space for OS and other things.
+
+### GCP
+
+GCP supports the
+[following](https://cloud.google.com/confidential-computing/confidential-vm/docs/os-and-machine-type)
+machine types. The one with the biggest amount of RAM is `n2d-standard-224` -- 896GB.
+
+## Capability
+
+KV server was tested on GCP with 10 TB of data loaded spread across 20 shards. Each shard had 3
+replicas.
